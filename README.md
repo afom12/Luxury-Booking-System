@@ -115,14 +115,27 @@ Room data is currently stored in page components. In production, this should be 
 - [x] **Room availability API** - Availability checking functionality
 - [x] **Admin dashboard** - Admin panel to manage bookings and view analytics
 
+## Completed Enhancements
+
+- [x] **User authentication and accounts** - Login/Register pages with user management
+- [x] **Booking history and management** - User dashboard to view and manage bookings
+- [x] **Reviews and ratings system** - Users can rate and review rooms
+- [x] **Email notifications** - Simulated email notifications for bookings (ready for API integration)
+- [x] **Room availability API** - Availability checking functionality
+- [x] **Admin dashboard** - Admin panel to manage bookings and view analytics
+- [x] **Payment gateway integration** - Multiple payment methods including Ethiopian mobile money (Telebirr, M-Pesa, CBE Birr)
+- [x] **Multi-language support** - Full Amharic and English translation support
+- [x] **Advanced filtering** - Price, guests, and amenities filtering for rooms
+- [x] **Real-time chat support** - Interactive chat widget with bilingual support
+
 ## Future Enhancements
 
-- [ ] Integration with payment gateway (Stripe, PayPal)
-- [ ] Multi-language support
-- [ ] Real-time chat support
 - [ ] Mobile app version
-- [ ] Advanced filtering and search
 - [ ] Loyalty program
+- [ ] Integration with real payment APIs (Stripe, Telebirr API)
+- [ ] Advanced AI chatbot integration
+- [ ] Booking calendar view
+- [ ] Email template customization
 
 ## License
 

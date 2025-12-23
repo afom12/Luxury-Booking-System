@@ -6,11 +6,14 @@ import { useRouter } from 'next/navigation'
 import { Menu, X, Calendar, User, LogOut } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
+import { useLanguage } from '@/context/LanguageContext'
+import LanguageSwitcher from './LanguageSwitcher'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { itemCount } = useCart()
   const { user, logout } = useAuth()
+  const { t } = useLanguage()
   const router = useRouter()
 
   const handleLogout = () => {
@@ -33,50 +36,51 @@ export default function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4">
             <Link href="/" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
-              Home
+              {t.nav.home}
             </Link>
             <Link href="/rooms" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
-              Rooms
+              {t.nav.rooms}
             </Link>
             <Link href="/about" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
-              About
+              {t.nav.about}
             </Link>
             <Link href="/contact" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
-              Contact
+              {t.nav.contact}
             </Link>
             {user ? (
               <>
                 {user.role === 'admin' && (
                   <Link href="/admin" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
-                    Admin
+                    {t.nav.admin}
                   </Link>
                 )}
                 <Link href="/dashboard" className="text-brown-700 hover:text-brown-900 font-medium transition-colors flex items-center space-x-1">
                   <User className="w-4 h-4" />
-                  <span>Dashboard</span>
+                  <span>{t.nav.dashboard}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
                   className="text-brown-700 hover:text-brown-900 font-medium transition-colors flex items-center space-x-1"
                 >
                   <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
+                  <span>{t.nav.logout}</span>
                 </button>
               </>
             ) : (
               <>
                 <Link href="/login" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
-                  Login
+                  {t.nav.login}
                 </Link>
                 <Link href="/register" className="btn-secondary">
-                  Sign Up
+                  {t.nav.register}
                 </Link>
               </>
             )}
+            <LanguageSwitcher />
             <Link href="/cart" className="btn-primary relative">
-              View Cart
+              {t.nav.viewCart}
               {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                   {itemCount}

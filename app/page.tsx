@@ -1,7 +1,10 @@
+'use client'
+
 import Image from 'next/image'
 import BookingForm from '@/components/BookingForm'
 import RoomCard from '@/components/RoomCard'
 import { Star, Award, Shield, Heart } from 'lucide-react'
+import { useLanguage } from '@/context/LanguageContext'
 
 // Sample room data
 const featuredRooms = [
@@ -56,6 +59,8 @@ const features = [
 ]
 
 export default function Home() {
+  const { t } = useLanguage()
+  
   return (
     <div>
       {/* Hero Section */}
@@ -72,10 +77,10 @@ export default function Home() {
         </div>
         <div className="relative z-10 text-center text-white px-4">
           <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6">
-            Welcome to Seaside Hotel
+            {t.home.title}
           </h1>
           <p className="text-xl md:text-2xl mb-8 text-cream-100">
-            Experience luxury beachfront accommodation
+            {t.home.subtitle}
           </p>
           <div className="flex items-center justify-center space-x-1 mb-8">
             {[...Array(5)].map((_, i) => (
@@ -117,10 +122,10 @@ export default function Home() {
         <div className="container-custom">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-serif font-bold text-brown-800 mb-4">
-              Featured Rooms
+              {t.home.featuredRooms}
             </h2>
             <p className="text-lg text-brown-600 max-w-2xl mx-auto">
-              Discover our most popular accommodations, each designed for comfort and luxury
+              {t.rooms.subtitle}
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -130,7 +135,7 @@ export default function Home() {
           </div>
           <div className="text-center mt-12">
             <a href="/rooms" className="btn-secondary">
-              View All Rooms
+              {t.home.viewAllRooms}
             </a>
           </div>
         </div>
@@ -142,12 +147,10 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-brown-800 mb-6">
-                Your Perfect Getaway Awaits
+                {t.home.yourPerfectGetaway}
               </h2>
               <p className="text-lg text-brown-600 mb-4">
-                Nestled along the pristine coastline, Seaside Hotel offers an unparalleled
-                experience of luxury and relaxation. Our beachfront location provides
-                stunning views and direct access to the ocean.
+                {t.home.aboutDescription}
               </p>
               <p className="text-lg text-brown-600 mb-6">
                 Each room is thoughtfully designed with modern amenities and elegant
@@ -155,7 +158,7 @@ export default function Home() {
                 romantic getaways to family vacations, we cater to every need.
               </p>
               <a href="/about" className="btn-primary">
-                Learn More About Us
+                {t.common.learnMore}
               </a>
             </div>
             <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl">

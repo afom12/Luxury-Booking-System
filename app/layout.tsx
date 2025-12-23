@@ -8,6 +8,8 @@ import { CartProvider } from '@/context/CartContext'
 import { AuthProvider } from '@/context/AuthContext'
 import { BookingProvider } from '@/context/BookingContext'
 import { ReviewProvider } from '@/context/ReviewContext'
+import { LanguageProvider } from '@/context/LanguageContext'
+import ChatWidget from '@/components/ChatWidget'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
@@ -25,17 +27,20 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="font-sans antialiased">
-        <AuthProvider>
-          <BookingProvider>
-            <ReviewProvider>
-              <CartProvider>
-                <Navbar />
-                <main>{children}</main>
-                <Footer />
-              </CartProvider>
-            </ReviewProvider>
-          </BookingProvider>
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <BookingProvider>
+              <ReviewProvider>
+                <CartProvider>
+                  <Navbar />
+                  <main>{children}</main>
+                  <Footer />
+                  <ChatWidget />
+                </CartProvider>
+              </ReviewProvider>
+            </BookingProvider>
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   )
