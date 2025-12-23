@@ -42,15 +42,15 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex items-center space-x-2 text-cream-200">
                 <MapPin className="w-5 h-5" />
-                <span>123 Beachfront Drive, Coastal City</span>
+                <span>Bole Road, Addis Ababa, Ethiopia</span>
               </li>
               <li className="flex items-center space-x-2 text-cream-200">
                 <Phone className="w-5 h-5" />
-                <span>+1 (555) 123-4567</span>
+                <span>+251 11 123 4567</span>
               </li>
               <li className="flex items-center space-x-2 text-cream-200">
                 <Mail className="w-5 h-5" />
-                <span>info@seasidehotel.com</span>
+                <span>info@seasidehotel.et</span>
               </li>
             </ul>
           </div>

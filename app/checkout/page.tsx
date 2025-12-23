@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
 import { useAuth } from '@/context/AuthContext'
 import { useBooking } from '@/context/BookingContext'
-import { CreditCard, Lock, CheckCircle } from 'lucide-react'
+import { CreditCard, Lock, CheckCircle, Smartphone } from 'lucide-react'
+import { getAvailablePaymentMethods, processStripePayment, processMobileMoneyPayment } from '@/lib/payment'
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
@@ -24,9 +25,13 @@ export default function CheckoutPage() {
     expiryDate: '',
     cvv: '',
   })
+  const [paymentMethod, setPaymentMethod] = useState('card')
+  const [mobileMoneyPhone, setMobileMoneyPhone] = useState('')
   const [isProcessing, setIsProcessing] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
   const [confirmationNumber, setConfirmationNumber] = useState('')
+  const [paymentError, setPaymentError] = useState('')
+  const paymentMethods = getAvailablePaymentMethods()
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -47,17 +52,49 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setPaymentError('')
     
     if (!user) {
       router.push('/login?redirect=/checkout')
       return
     }
 
+    // Validate payment method specific fields
+    if (paymentMethod === 'card' && (!formData.cardNumber || !formData.expiryDate || !formData.cvv)) {
+      setPaymentError('Please fill in all card details')
+      return
+    }
+
+    if (paymentMethod !== 'card' && !mobileMoneyPhone) {
+      setPaymentError('Please enter your mobile money phone number')
+      return
+    }
+
     setIsProcessing(true)
 
     try {
-      // Simulate payment processing
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      let paymentResult
+
+      // Process payment based on selected method
+      if (paymentMethod === 'card') {
+        paymentResult = await processStripePayment(
+          total,
+          'card_' + formData.cardNumber.replace(/\s/g, '').slice(-4),
+          { bookingId: 'temp' }
+        )
+      } else {
+        paymentResult = await processMobileMoneyPayment(
+          total,
+          mobileMoneyPhone,
+          paymentMethod as 'telebirr' | 'm_pesa' | 'cbe_birr'
+        )
+      }
+
+      if (paymentResult.status !== 'succeeded') {
+        setPaymentError('Payment failed. Please try again.')
+        setIsProcessing(false)
+        return
+      }
 
       // Save booking
       const confirmation = await addBooking(items)
@@ -72,6 +109,7 @@ export default function CheckoutPage() {
       }, 5000)
     } catch (error) {
       console.error('Booking error:', error)
+      setPaymentError('An error occurred. Please try again.')
       setIsProcessing(false)
     }
   }
@@ -237,61 +275,120 @@ export default function CheckoutPage() {
                 {/* Payment */}
                 <h2 className="text-2xl font-bold text-brown-800 mb-6 flex items-center space-x-2">
                   <CreditCard className="w-6 h-6" />
-                  <span>Payment Information</span>
+                  <span>Payment Method</span>
                 </h2>
-                <div className="mb-4">
-                  <label className="block text-sm font-semibold text-brown-700 mb-2">
-                    Card Number *
+
+                {paymentError && (
+                  <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+                    {paymentError}
+                  </div>
+                )}
+
+                {/* Payment Method Selection */}
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-brown-700 mb-3">
+                    Select Payment Method *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={19}
-                    placeholder="1234 5678 9012 3456"
-                    value={formData.cardNumber}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim()
-                      setFormData({ ...formData, cardNumber: value })
-                    }}
-                    className="w-full px-4 py-3 border border-brown-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-8">
-                  <div>
-                    <label className="block text-sm font-semibold text-brown-700 mb-2">
-                      Expiry Date *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="MM/YY"
-                      maxLength={5}
-                      value={formData.expiryDate}
-                      onChange={(e) => {
-                        let value = e.target.value.replace(/\D/g, '')
-                        if (value.length >= 2) {
-                          value = value.slice(0, 2) + '/' + value.slice(2, 4)
-                        }
-                        setFormData({ ...formData, expiryDate: value })
-                      }}
-                      className="w-full px-4 py-3 border border-brown-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-brown-700 mb-2">
-                      CVV *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      maxLength={4}
-                      placeholder="123"
-                      value={formData.cvv}
-                      onChange={(e) => setFormData({ ...formData, cvv: e.target.value.replace(/\D/g, '') })}
-                      className="w-full px-4 py-3 border border-brown-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
-                    />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {paymentMethods.map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(method.id)}
+                        className={`p-4 border-2 rounded-lg text-center transition-all ${
+                          paymentMethod === method.id
+                            ? 'border-brown-700 bg-brown-50'
+                            : 'border-brown-300 hover:border-brown-500'
+                        }`}
+                      >
+                        <div className="text-2xl mb-2">{method.icon}</div>
+                        <div className="text-sm font-semibold text-brown-800">{method.name}</div>
+                      </button>
+                    ))}
                   </div>
                 </div>
+
+                {/* Card Payment Form */}
+                {paymentMethod === 'card' && (
+                  <>
+                    <div className="mb-4">
+                      <label className="block text-sm font-semibold text-brown-700 mb-2">
+                        Card Number *
+                      </label>
+                      <input
+                        type="text"
+                        required={paymentMethod === 'card'}
+                        maxLength={19}
+                        placeholder="1234 5678 9012 3456"
+                        value={formData.cardNumber}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim()
+                          setFormData({ ...formData, cardNumber: value })
+                        }}
+                        className="w-full px-4 py-3 border border-brown-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                      <div>
+                        <label className="block text-sm font-semibold text-brown-700 mb-2">
+                          Expiry Date *
+                        </label>
+                        <input
+                          type="text"
+                          required={paymentMethod === 'card'}
+                          placeholder="MM/YY"
+                          maxLength={5}
+                          value={formData.expiryDate}
+                          onChange={(e) => {
+                            let value = e.target.value.replace(/\D/g, '')
+                            if (value.length >= 2) {
+                              value = value.slice(0, 2) + '/' + value.slice(2, 4)
+                            }
+                            setFormData({ ...formData, expiryDate: value })
+                          }}
+                          className="w-full px-4 py-3 border border-brown-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-brown-700 mb-2">
+                          CVV *
+                        </label>
+                        <input
+                          type="text"
+                          required={paymentMethod === 'card'}
+                          maxLength={4}
+                          placeholder="123"
+                          value={formData.cvv}
+                          onChange={(e) => setFormData({ ...formData, cvv: e.target.value.replace(/\D/g, '') })}
+                          className="w-full px-4 py-3 border border-brown-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Mobile Money Payment Form */}
+                {paymentMethod !== 'card' && (
+                  <div className="mb-8">
+                    <label className="block text-sm font-semibold text-brown-700 mb-2">
+                      Mobile Money Phone Number *
+                    </label>
+                    <div className="relative">
+                      <Smartphone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-brown-500" />
+                      <input
+                        type="tel"
+                        required={paymentMethod !== 'card'}
+                        placeholder="0911 234 567"
+                        value={mobileMoneyPhone}
+                        onChange={(e) => setMobileMoneyPhone(e.target.value)}
+                        className="w-full pl-10 pr-4 py-3 border border-brown-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brown-500"
+                      />
+                    </div>
+                    <p className="mt-2 text-sm text-brown-600">
+                      You will receive a payment request on your phone. Please confirm the payment.
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex items-center space-x-2 text-brown-600 mb-6">
                   <Lock className="w-5 h-5" />

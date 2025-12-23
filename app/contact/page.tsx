@@ -56,9 +56,9 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-brown-800 mb-1">Address</h3>
                       <p className="text-brown-600">
-                        123 Beachfront Drive<br />
-                        Coastal City, CC 12345<br />
-                        United States
+                        Bole Road, Near Bole Airport<br />
+                        Addis Ababa, Ethiopia<br />
+                        P.O. Box 1234
                       </p>
                     </div>
                   </div>
@@ -69,7 +69,8 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-brown-800 mb-1">Phone</h3>
                       <p className="text-brown-600">
-                        +1 (555) 123-4567<br />
+                        +251 11 123 4567<br />
+                        +251 911 234 567<br />
                         Available 24/7
                       </p>
                     </div>
@@ -81,8 +82,8 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-brown-800 mb-1">Email</h3>
                       <p className="text-brown-600">
-                        info@seasidehotel.com<br />
-                        reservations@seasidehotel.com
+                        info@seasidehotel.et<br />
+                        reservations@seasidehotel.et
                       </p>
                     </div>
                   </div>

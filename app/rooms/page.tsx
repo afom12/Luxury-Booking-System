@@ -1,5 +1,8 @@
+'use client'
+
+import { useState, useMemo } from 'react'
 import RoomCard from '@/components/RoomCard'
-import { Filter } from 'lucide-react'
+import RoomFilter, { FilterOptions } from '@/components/RoomFilter'
 
 // Extended room data
 const allRooms = [
@@ -66,6 +69,40 @@ const allRooms = [
 ]
 
 export default function RoomsPage() {
+  const [filters, setFilters] = useState<FilterOptions>({
+    minPrice: 0,
+    maxPrice: 1000,
+    maxGuests: 10,
+    amenities: [],
+  })
+
+  const filteredRooms = useMemo(() => {
+    return allRooms.filter((room) => {
+      // Price filter
+      if (room.price < filters.minPrice || room.price > filters.maxPrice) {
+        return false
+      }
+
+      // Guests filter
+      if (room.maxGuests > filters.maxGuests) {
+        return false
+      }
+
+      // Amenities filter
+      if (filters.amenities.length > 0) {
+        const roomAmenities = room.amenities.map((a) => a.toLowerCase())
+        const hasAllAmenities = filters.amenities.every((amenity) =>
+          roomAmenities.some((ra) => ra.includes(amenity.toLowerCase()))
+        )
+        if (!hasAllAmenities) {
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [filters])
+
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Header */}
@@ -89,20 +126,36 @@ export default function RoomsPage() {
                 Available Rooms
               </h2>
               <p className="text-brown-600 mt-2">
-                {allRooms.length} rooms available
+                {filteredRooms.length} {filteredRooms.length === 1 ? 'room' : 'rooms'} available
               </p>
             </div>
-            <button className="btn-secondary flex items-center space-x-2">
-              <Filter className="w-5 h-5" />
-              <span>Filter</span>
-            </button>
+            <RoomFilter onFilterChange={setFilters} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {allRooms.map((room) => (
-              <RoomCard key={room.id} room={room} />
-            ))}
-          </div>
+          {filteredRooms.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-brown-600 text-lg mb-4">No rooms match your filters.</p>
+              <button
+                onClick={() =>
+                  setFilters({
+                    minPrice: 0,
+                    maxPrice: 1000,
+                    maxGuests: 10,
+                    amenities: [],
+                  })
+                }
+                className="btn-secondary"
+              >
+                Clear Filters
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredRooms.map((room) => (
+                <RoomCard key={room.id} room={room} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>
