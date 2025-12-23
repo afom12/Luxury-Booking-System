@@ -5,6 +5,9 @@ import './globals.css'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { CartProvider } from '@/context/CartContext'
+import { AuthProvider } from '@/context/AuthContext'
+import { BookingProvider } from '@/context/BookingContext'
+import { ReviewProvider } from '@/context/ReviewContext'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' })
@@ -22,11 +25,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body className="font-sans antialiased">
-        <CartProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </CartProvider>
+        <AuthProvider>
+          <BookingProvider>
+            <ReviewProvider>
+              <CartProvider>
+                <Navbar />
+                <main>{children}</main>
+                <Footer />
+              </CartProvider>
+            </ReviewProvider>
+          </BookingProvider>
+        </AuthProvider>
       </body>
     </html>
   )

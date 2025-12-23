@@ -6,6 +6,8 @@ import { useParams, useRouter } from 'next/navigation'
 import { Bed, Users, Wifi, Car, Coffee, Waves, Calendar, CheckCircle } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
 import BookingForm from '@/components/BookingForm'
+import ReviewSection from '@/components/ReviewSection'
+import { useReview } from '@/context/ReviewContext'
 import { differenceInDays } from 'date-fns'
 
 // Room data - in production, this would come from an API
@@ -82,6 +84,7 @@ export default function RoomDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { addToCart } = useCart()
+  const { getRoomRating } = useReview()
   const roomId = params.id as string
   const room = rooms[roomId]
   const [selectedImage, setSelectedImage] = useState(0)
@@ -90,6 +93,7 @@ export default function RoomDetailPage() {
     checkOut: Date
     guests: number
   } | null>(null)
+  const averageRating = getRoomRating(roomId)
 
   if (!room) {
     return (
@@ -177,7 +181,7 @@ export default function RoomDetailPage() {
               <p className="text-brown-600 leading-relaxed">{room.fullDescription}</p>
             </div>
 
-            <div className="bg-white rounded-xl p-6">
+            <div className="bg-white rounded-xl p-6 mb-8">
               <h2 className="text-2xl font-bold text-brown-800 mb-4">Amenities</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {room.amenities.map((amenity: any, index: number) => (
@@ -188,6 +192,8 @@ export default function RoomDetailPage() {
                 ))}
               </div>
             </div>
+
+            <ReviewSection roomId={roomId} />
           </div>
 
           {/* Booking Sidebar */}

@@ -1,12 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
+import { useBooking } from '@/context/BookingContext'
 import { CreditCard, Lock, CheckCircle } from 'lucide-react'
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart()
+  const { user, isLoading: authLoading } = useAuth()
+  const { addBooking } = useBooking()
   const router = useRouter()
   const [formData, setFormData] = useState({
     firstName: '',
@@ -22,21 +26,66 @@ export default function CheckoutPage() {
   })
   const [isProcessing, setIsProcessing] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
+  const [confirmationNumber, setConfirmationNumber] = useState('')
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login?redirect=/checkout')
+    }
+  }, [user, authLoading, router])
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        email: user.email,
+        firstName: user.name.split(' ')[0] || '',
+        lastName: user.name.split(' ').slice(1).join(' ') || '',
+      }))
+    }
+  }, [user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!user) {
+      router.push('/login?redirect=/checkout')
+      return
+    }
+
     setIsProcessing(true)
 
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      // Simulate payment processing
+      await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    setIsProcessing(false)
-    setIsComplete(true)
-    clearCart()
+      // Save booking
+      const confirmation = await addBooking(items)
+      setConfirmationNumber(confirmation)
 
-    setTimeout(() => {
-      router.push('/')
-    }, 3000)
+      setIsProcessing(false)
+      setIsComplete(true)
+      clearCart()
+
+      setTimeout(() => {
+        router.push('/dashboard')
+      }, 5000)
+    } catch (error) {
+      console.error('Booking error:', error)
+      setIsProcessing(false)
+    }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-cream-50 flex items-center justify-center">
+        <div className="text-brown-600">Loading...</div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
   }
 
   if (items.length === 0 && !isComplete) {
@@ -54,11 +103,16 @@ export default function CheckoutPage() {
           <h1 className="text-3xl font-serif font-bold text-brown-800 mb-4">
             Booking Confirmed!
           </h1>
-          <p className="text-brown-600 mb-6">
+          <p className="text-brown-600 mb-2">
             Thank you for your booking. A confirmation email has been sent to your email address.
           </p>
+          {confirmationNumber && (
+            <p className="text-lg font-semibold text-brown-800 mb-6">
+              Confirmation: {confirmationNumber}
+            </p>
+          )}
           <p className="text-sm text-brown-500">
-            Redirecting to homepage...
+            Redirecting to dashboard...
           </p>
         </div>
       </div>

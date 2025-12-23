@@ -2,12 +2,21 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X, Calendar } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Menu, X, Calendar, User, LogOut } from 'lucide-react'
 import { useCart } from '@/context/CartContext'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { itemCount } = useCart()
+  const { user, logout } = useAuth()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    logout()
+    router.push('/')
+  }
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -37,6 +46,35 @@ export default function Navbar() {
             <Link href="/contact" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
               Contact
             </Link>
+            {user ? (
+              <>
+                {user.role === 'admin' && (
+                  <Link href="/admin" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
+                    Admin
+                  </Link>
+                )}
+                <Link href="/dashboard" className="text-brown-700 hover:text-brown-900 font-medium transition-colors flex items-center space-x-1">
+                  <User className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-brown-700 hover:text-brown-900 font-medium transition-colors flex items-center space-x-1"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-brown-700 hover:text-brown-900 font-medium transition-colors">
+                  Login
+                </Link>
+                <Link href="/register" className="btn-secondary">
+                  Sign Up
+                </Link>
+              </>
+            )}
             <Link href="/cart" className="btn-primary relative">
               View Cart
               {itemCount > 0 && (
@@ -72,6 +110,30 @@ export default function Navbar() {
               <Link href="/contact" className="text-brown-700 hover:text-brown-900 font-medium">
                 Contact
               </Link>
+              {user ? (
+                <>
+                  <Link href="/dashboard" className="text-brown-700 hover:text-brown-900 font-medium flex items-center space-x-2">
+                    <User className="w-4 h-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-brown-700 hover:text-brown-900 font-medium flex items-center space-x-2 text-left"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/login" className="text-brown-700 hover:text-brown-900 font-medium">
+                    Login
+                  </Link>
+                  <Link href="/register" className="btn-secondary text-center">
+                    Sign Up
+                  </Link>
+                </>
+              )}
               <Link href="/cart" className="btn-primary text-center relative">
                 View Cart
                 {itemCount > 0 && (
